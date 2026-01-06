@@ -1,0 +1,257 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lintai.dev/schema.json",
+  "title": "lintai Configuration",
+  "description": "Configuration schema for lintai - AI-powered TypeScript linter",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "llm": {
+      "type": "object",
+      "description": "LLM provider configuration",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "openai",
+            "anthropic",
+            "gemini",
+            "ollama",
+            "openai-compatible"
+          ],
+          "default": "openai",
+          "description": "LLM provider to use",
+          "enumDescriptions": [
+            "OpenAI API (requires OPENAI_API_KEY)",
+            "Anthropic Claude API (requires ANTHROPIC_API_KEY)",
+            "Google Gemini API (requires GEMINI_API_KEY)",
+            "Local Ollama server (no API key required)",
+            "Custom OpenAI-compatible API (e.g., LM Studio, vLLM)"
+          ]
+        },
+        "baseUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "API base URL. Defaults vary by provider:\n- openai: https://api.openai.com/v1\n- anthropic: https://api.anthropic.com\n- gemini: https://generativelanguage.googleapis.com/v1beta\n- ollama: http://localhost:11434\n- openai-compatible: http://localhost:8080/v1",
+          "examples": [
+            "https://api.openai.com/v1",
+            "http://localhost:1234/v1",
+            "http://localhost:11434"
+          ]
+        },
+        "model": {
+          "type": "string",
+          "description": "Model name to use. Defaults vary by provider:\n- openai: gpt-4o-mini\n- anthropic: claude-sonnet-4-20250514\n- gemini: gemini-2.0-flash\n- ollama: codellama",
+          "examples": [
+            "gpt-4o-mini",
+            "gpt-4o",
+            "claude-sonnet-4-20250514",
+            "gemini-2.0-flash",
+            "qwen2.5-coder:7b",
+            "codellama:7b"
+          ]
+        },
+        "apiKey": {
+          "type": "string",
+          "description": "API key for the provider. Can also be set via environment variables (OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, or LINTAI_API_KEY)"
+        },
+        "timeout": {
+          "type": "number",
+          "minimum": 1000,
+          "default": 30000,
+          "description": "Request timeout in milliseconds. Increase for slow local models (e.g., 60000-120000)"
+        },
+        "maxTokens": {
+          "type": "number",
+          "minimum": 1,
+          "default": 2048,
+          "description": "Maximum tokens in the LLM response"
+        }
+      },
+      "additionalProperties": false
+    },
+    "analysis": {
+      "type": "object",
+      "description": "Code analysis settings",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["snippet", "full-file"],
+          "default": "snippet",
+          "description": "How much code to send to the LLM:\n- snippet: Only relevant sections (faster, cheaper)\n- full-file: Entire file content (more context, slower)"
+        },
+        "includeImports": {
+          "type": "boolean",
+          "default": false,
+          "description": "Include content of imported local files in the analysis context"
+        },
+        "maxFileSize": {
+          "type": "number",
+          "minimum": 1,
+          "default": 100000,
+          "description": "Maximum file size in bytes. Files larger than this are skipped"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rules": {
+      "type": "object",
+      "description": "Enable/disable specific rule categories",
+      "properties": {
+        "codeSmells": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect code smells (long functions, deep nesting, god objects)"
+        },
+        "badPractices": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect bad practices (magic numbers, mutable globals, missing error handling)"
+        },
+        "spaghetti": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect spaghetti code (unclear control flow, callback hell)"
+        },
+        "naming": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect naming issues (unclear names, single-letter variables)"
+        },
+        "errorHandling": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect error handling issues (empty catch blocks, swallowed errors)"
+        },
+        "anyAbuse": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect TypeScript 'any' type abuse"
+        }
+      },
+      "additionalProperties": false
+    },
+    "severity": {
+      "type": "object",
+      "description": "Confidence thresholds for severity mapping",
+      "properties": {
+        "highConfidenceThreshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.8,
+          "description": "Findings with confidence >= this value keep their original severity"
+        },
+        "mediumConfidenceThreshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "description": "Findings with confidence >= this value are downgraded by one level"
+        }
+      },
+      "additionalProperties": false
+    },
+    "performance": {
+      "type": "object",
+      "description": "Performance and rate limiting settings",
+      "properties": {
+        "debounceMs": {
+          "type": "number",
+          "minimum": 0,
+          "default": 600,
+          "description": "Debounce time in milliseconds for LSP mode. Analysis waits this long after the last keystroke"
+        },
+        "maxConcurrent": {
+          "type": "number",
+          "minimum": 1,
+          "default": 3,
+          "description": "Maximum concurrent file analyses (CLI mode)"
+        },
+        "rateLimitPerMinute": {
+          "type": "number",
+          "minimum": 1,
+          "default": 10,
+          "description": "Maximum LLM API requests per minute"
+        },
+        "rateLimitEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable internal rate limiting. Disable for local LLMs"
+        }
+      },
+      "additionalProperties": false
+    },
+    "cli": {
+      "type": "object",
+      "description": "CLI-specific settings",
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["human", "json"],
+          "default": "human",
+          "description": "Output format for CLI"
+        },
+        "maxFiles": {
+          "type": "number",
+          "minimum": 1,
+          "default": 100,
+          "description": "Maximum number of files to analyze in one CLI run"
+        },
+        "extensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": ["ts", "tsx"],
+          "description": "File extensions to analyze",
+          "examples": [
+            ["ts", "tsx"],
+            ["ts", "tsx", "js", "jsx"]
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "debug": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable debug logging"
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "$schema": "https://lintai.dev/schema.json",
+      "llm": {
+        "provider": "openai",
+        "model": "gpt-4o-mini"
+      }
+    },
+    {
+      "$schema": "https://lintai.dev/schema.json",
+      "llm": {
+        "provider": "ollama",
+        "model": "qwen2.5-coder:7b"
+      },
+      "performance": {
+        "rateLimitEnabled": false
+      }
+    },
+    {
+      "$schema": "https://lintai.dev/schema.json",
+      "llm": {
+        "provider": "openai-compatible",
+        "baseUrl": "http://localhost:1234/v1",
+        "model": "qwen2.5-coder-7b-instruct",
+        "timeout": 60000
+      },
+      "performance": {
+        "rateLimitEnabled": false
+      }
+    }
+  ]
+}

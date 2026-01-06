@@ -1,0 +1,31 @@
+{
+  "$schema": "https://lintai.dev/schema.json",
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "timeout": 30000,
+    "maxTokens": 2048
+  },
+  "analysis": {
+    "mode": "snippet",
+    "includeImports": false,
+    "maxFileSize": 100000
+  },
+  "rules": {
+    "codeSmells": true,
+    "badPractices": true,
+    "spaghetti": true,
+    "naming": true,
+    "errorHandling": true,
+    "anyAbuse": true
+  },
+  "severity": {
+    "highConfidenceThreshold": 0.8,
+    "mediumConfidenceThreshold": 0.5
+  },
+  "performance": {
+    "debounceMs": 600,
+    "rateLimitPerMinute": 10
+  },
+  "debug": false
+}

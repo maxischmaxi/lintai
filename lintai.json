@@ -1,0 +1,33 @@
+{
+  "$schema": "https://lintai.maximilian-jeschek.workers.dev/schema.json",
+  "llm": {
+    "provider": "openai-compatible",
+    "baseUrl": "http://localhost:1234/v1",
+    "model": "deepseek/deepseek-r1-0528-qwen3-8b",
+    "timeout": 60000,
+    "maxTokens": 4096
+  },
+  "analysis": {
+    "mode": "snippet",
+    "includeImports": false,
+    "maxFileSize": 100000
+  },
+  "rules": {
+    "codeSmells": true,
+    "badPractices": true,
+    "spaghetti": true,
+    "naming": true,
+    "errorHandling": true,
+    "anyAbuse": true
+  },
+  "severity": {
+    "highConfidenceThreshold": 0.8,
+    "mediumConfidenceThreshold": 0.5
+  },
+  "performance": {
+    "debounceMs": 600,
+    "rateLimitPerMinute": 100,
+    "rateLimitEnabled": false
+  },
+  "debug": false
+}

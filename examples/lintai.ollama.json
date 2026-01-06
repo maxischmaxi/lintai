@@ -1,0 +1,16 @@
+{
+  "$schema": "https://lintai.dev/schema.json",
+  "llm": {
+    "provider": "ollama",
+    "baseUrl": "http://localhost:11434",
+    "model": "qwen2.5-coder:7b",
+    "timeout": 60000,
+    "maxTokens": 4096
+  },
+  "analysis": {
+    "mode": "snippet"
+  },
+  "performance": {
+    "rateLimitEnabled": false
+  }
+}

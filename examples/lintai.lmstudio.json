@@ -1,0 +1,16 @@
+{
+  "$schema": "https://lintai.dev/schema.json",
+  "llm": {
+    "provider": "openai-compatible",
+    "baseUrl": "http://localhost:1234/v1",
+    "model": "qwen2.5-coder-7b-instruct",
+    "timeout": 60000,
+    "maxTokens": 4096
+  },
+  "analysis": {
+    "mode": "snippet"
+  },
+  "performance": {
+    "rateLimitEnabled": false
+  }
+}

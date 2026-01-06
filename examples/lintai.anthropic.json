@@ -1,0 +1,20 @@
+{
+  "$schema": "https://lintai.dev/schema.json",
+  "llm": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-20250514",
+    "timeout": 30000,
+    "maxTokens": 2048
+  },
+  "analysis": {
+    "mode": "snippet"
+  },
+  "rules": {
+    "codeSmells": true,
+    "badPractices": true,
+    "spaghetti": true,
+    "naming": true,
+    "errorHandling": true,
+    "anyAbuse": true
+  }
+}
