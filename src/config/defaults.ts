@@ -33,7 +33,7 @@ export const DEFAULT_CONFIG: AilintConfig = {
   cli: {
     format: "human",
     maxFiles: 100,
-    extensions: ["ts", "tsx"],
+    extensions: ["ts", "tsx", "js", "jsx", "go"],
   },
   debug: false,
 };

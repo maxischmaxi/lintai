@@ -10,7 +10,7 @@ import {
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { loadConfig, getConfigHash, validateAPIKey } from "../config/loader.js";
 import { getGlobalDocumentStore } from "../core/document-store.js";
-import { analyze, initParser } from "../core/analyzer.js";
+import { analyze } from "../core/analyzer.js";
 import {
   findingsToDiagnostics,
   createErrorDiagnostic,
@@ -60,14 +60,6 @@ export function startLSPServer(): void {
       const apiKeyValidation = validateAPIKey(config);
       if (!apiKeyValidation.valid && apiKeyValidation.message) {
         logger.warn(apiKeyValidation.message);
-      }
-
-      // Initialize parser
-      try {
-        await initParser();
-        logger.info("Parser initialized");
-      } catch (error) {
-        logger.error("Failed to initialize parser:", error);
       }
 
       logger.info("lintai LSP server initialized");

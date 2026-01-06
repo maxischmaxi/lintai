@@ -1,9 +1,9 @@
 {
-  "$schema": "https://lintai.maximilian-jeschek.workers.dev/schema.json",
+  "$schema": "https://lintai.dev/schema.json",
   "llm": {
     "provider": "openai-compatible",
     "baseUrl": "http://localhost:1234/v1",
-    "model": "deepseek/deepseek-r1-0528-qwen3-8b",
+    "model": "qwen/qwen2.5-coder-14b",
     "timeout": 60000,
     "maxTokens": 4096
   },

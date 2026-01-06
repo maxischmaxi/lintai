@@ -1,122 +1,101 @@
-import type { AnalysisContext } from "../types/context.js";
 import type { RulesConfig } from "../types/config.js";
+import { getLanguageForExtension } from "../core/languages.js";
 
-export function buildSystemPrompt(rules: RulesConfig): string {
+/**
+ * Build the system prompt for code analysis.
+ */
+export function buildSystemPrompt(
+  rules: RulesConfig,
+  languageId?: string,
+): string {
+  const lang = languageId
+    ? getLanguageForExtension(`.${languageId}`) || getLanguageById(languageId)
+    : null;
+  const langName = lang?.name || "code";
+
+  // Build rules list
   const enabledRules: string[] = [];
 
   if (rules.codeSmells) {
     enabledRules.push(
-      `- CODE SMELLS: Long functions (>50 lines), deep nesting (>4 levels), god objects, feature envy, large classes`,
+      "- CODE SMELLS: Long functions (>50 lines), deep nesting (>4 levels), god objects, large classes",
     );
   }
   if (rules.badPractices) {
     enabledRules.push(
-      `- BAD PRACTICES: Missing error handling, magic numbers/strings, mutable global state, side effects in getters`,
+      "- BAD PRACTICES: Missing error handling, magic numbers/strings, mutable global state",
     );
   }
   if (rules.spaghetti) {
     enabledRules.push(
-      `- SPAGHETTI CODE: Unclear control flow, excessive conditionals, callback hell, deeply nested promises`,
+      "- SPAGHETTI CODE: Unclear control flow, excessive conditionals, deeply nested callbacks",
     );
   }
   if (rules.naming) {
     enabledRules.push(
-      `- NAMING: Unclear variable/function names, inconsistent conventions, single-letter names (except loop counters), misleading names`,
+      "- NAMING: Unclear variable/function names, inconsistent conventions, misleading names",
     );
   }
   if (rules.errorHandling) {
     enabledRules.push(
-      `- ERROR HANDLING: Empty catch blocks, swallowed errors, missing async/await error handling, unchecked null/undefined`,
+      "- ERROR HANDLING: Empty catch blocks, swallowed errors, missing error handling",
     );
   }
-  if (rules.anyAbuse) {
+  if (rules.anyAbuse && languageId === "typescript") {
     enabledRules.push(
-      `- TYPE SAFETY: Explicit 'any' type, type assertions without validation, missing null checks, implicit any`,
+      "- TYPE SAFETY: Explicit 'any' type, unsafe type assertions, missing null checks",
     );
   }
 
-  return `You are a TypeScript code quality analyzer. Your task is to identify genuine code issues and return structured findings.
+  const langInstructions = lang?.promptInstructions || "";
+
+  return `You are a ${langName} code quality analyzer. Identify genuine code issues and return structured findings.
 
 ## Categories to check:
 ${enabledRules.join("\n")}
 
+${langInstructions ? `## Language-specific guidance:\n${langInstructions}\n` : ""}
 ## Rules:
 - Be precise and actionable - every finding must have a clear fix
 - Only report real issues, not style preferences
-- Include specific line numbers (0-indexed) when possible
-- Set confidence 0.0-1.0 based on how certain you are
+- Include specific line numbers (1-indexed) when possible
+- Set confidence 0.0-1.0 based on certainty
 - Prioritize issues that could cause bugs or maintenance problems
-- Do NOT flag stylistic choices or personal preferences
-- Do NOT include explanations outside the JSON
 
 ## Severity Guidelines:
-- error: Critical issues that will likely cause bugs or security problems
+- error: Critical issues likely to cause bugs or security problems
 - warning: Issues that hurt maintainability or could cause future bugs
 - info: Suggestions for improvement
 - hint: Minor recommendations
 
 ## Output format:
-Return ONLY a valid JSON array of findings. No markdown, no explanations, just JSON.
-Each finding must have: id, title, severity, message, suggestion, category, confidence, and optionally range.`;
+Return ONLY a valid JSON array of findings. No markdown, no explanations, just JSON.`;
 }
 
-export function buildUserPrompt(context: AnalysisContext): string {
-  const { metrics, imports, declarations, content, snippets } = context;
+/**
+ * Build user prompt with the code to analyze.
+ */
+export function buildUserPrompt(
+  filePath: string,
+  content: string,
+  languageId?: string,
+): string {
+  const lang = languageId
+    ? getLanguageForExtension(`.${languageId}`) || getLanguageById(languageId)
+    : null;
+  const langName = lang?.id || "code";
+  const lineCount = content.split("\n").length;
 
-  // Build metrics section
-  const metricsSection = `## File Metrics:
-- Total lines: ${metrics.totalLines}
-- Code lines: ${metrics.codeLines}
-- Max nesting depth: ${metrics.maxNestingDepth}
-- Estimated complexity: ${metrics.estimatedComplexity}
-- Function count: ${metrics.functionCount}
-- Longest function: ${metrics.longestFunctionLines} lines`;
+  return `Analyze this ${lang?.name || "code"} file for quality issues.
 
-  // Build imports section
-  const importsSection =
-    imports.length > 0
-      ? `## Imports:
-${imports.map((i) => `- ${i.source} (${i.specifiers.join(", ")})`).join("\n")}`
-      : "## Imports:\nNone";
+File: ${filePath}
+Lines: ${lineCount}
 
-  // Build declarations section
-  const declarationsSection =
-    declarations.length > 0
-      ? `## Declarations:
-${declarations.map((d) => `- ${d.kind} ${d.name} (lines ${d.startLine}-${d.endLine})${d.exported ? " [exported]" : ""}`).join("\n")}`
-      : "## Declarations:\nNone";
-
-  // Build code section (snippets or full file)
-  let codeSection: string;
-  if (snippets && snippets.length > 0) {
-    codeSection = `## Code Snippets:
-${snippets
-  .map(
-    (s) => `### ${s.context} (lines ${s.startLine}-${s.endLine}):
-\`\`\`typescript
-${s.code}
-\`\`\``,
-  )
-  .join("\n\n")}`;
-  } else {
-    codeSection = `## Full Code:
-\`\`\`typescript
+\`\`\`${langName}
 ${content}
-\`\`\``;
-  }
+\`\`\`
 
-  // Build the complete prompt
-  return `Analyze this TypeScript code for quality issues.
-
-${metricsSection}
-
-${importsSection}
-
-${declarationsSection}
-
-${codeSection}
-
-Return findings as a JSON array with this structure:
+Return findings as a JSON array:
 [
   {
     "id": "AI001",
@@ -139,4 +118,19 @@ Categories: smell, practice, spaghetti, naming, safety
 Severities: error, warning, info, hint
 
 Respond with ONLY the JSON array, no other text.`;
+}
+
+/**
+ * Helper to get language by ID (for when we pass "go" instead of ".go")
+ */
+function getLanguageById(id: string) {
+  const extMap: Record<string, string> = {
+    typescript: ".ts",
+    go: ".go",
+    python: ".py",
+    rust: ".rs",
+    java: ".java",
+  };
+  const ext = extMap[id];
+  return ext ? getLanguageForExtension(ext) : undefined;
 }

@@ -2,7 +2,7 @@ import { readFileSync, statSync, existsSync } from "node:fs";
 import { resolve, extname } from "node:path";
 import { glob } from "glob";
 import { loadConfig, validateAPIKey } from "../config/loader.js";
-import { analyze, initParser, type AnalysisResult } from "../core/analyzer.js";
+import { analyze, type AnalysisResult } from "../core/analyzer.js";
 import { logger } from "../utils/logger.js";
 import { formatResults, formatSummary, formatJSON } from "./formatter.js";
 import { initConfig } from "./init.js";
@@ -56,14 +56,6 @@ export async function runCLI(args: CLIArgs): Promise<number> {
     return 2;
   }
 
-  // Initialize parser
-  try {
-    await initParser();
-  } catch (error) {
-    console.error("Failed to initialize parser:", error);
-    return 2;
-  }
-
   // Get files to analyze
   const files = await resolveFiles(
     args.paths,
@@ -72,7 +64,7 @@ export async function runCLI(args: CLIArgs): Promise<number> {
   );
 
   if (files.length === 0) {
-    console.error("No TypeScript files found to analyze");
+    console.error("No files found to analyze");
     return 2;
   }
 

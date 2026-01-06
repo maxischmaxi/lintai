@@ -106,7 +106,7 @@ export function formatResults(
     lines.push("");
     lines.push(
       colorize(
-        `  Parse: ${result.metrics.parseTimeMs}ms | LLM: ${result.metrics.llmTimeMs}ms | Total: ${result.metrics.totalTimeMs}ms`,
+        `  LLM: ${result.metrics.llmTimeMs}ms | Total: ${result.metrics.totalTimeMs}ms`,
         COLORS.dim,
         useColor,
       ),
