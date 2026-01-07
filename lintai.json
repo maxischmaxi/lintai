@@ -1,9 +1,9 @@
 {
   "$schema": "https://lintai.dev/schema.json",
   "llm": {
-    "provider": "openai-compatible",
-    "baseUrl": "http://localhost:1234/v1",
-    "model": "qwen/qwen2.5-coder-14b",
+    "provider": "ollama",
+    "baseUrl": "http://localhost:11434",
+    "model": "qwen2.5-coder:7b",
     "timeout": 60000,
     "maxTokens": 4096
   },
