@@ -1,26 +1,35 @@
 # lintai
 
-AI-powered TypeScript linter using LLM analysis. Detects code smells, bad practices, spaghetti code, and other quality issues.
+AI-powered multi-language linter using LLM analysis. Detects code smells, bad practices, spaghetti code, and other quality issues.
 
 ## Features
 
-- **Multiple LLM Providers**: OpenAI, Anthropic (Claude), Google Gemini, Ollama
-- **CLI Mode**: Analyze files from the command line, like ESLint
+- **Multi-Language Support**: TypeScript, JavaScript, Go, Python, Rust, Java
+- **Multiple LLM Providers**: OpenAI, Anthropic (Claude), Google Gemini, Ollama, LM Studio
+- **CLI Mode**: Analyze files from the command line
 - **LSP Mode**: Real-time analysis in your editor (Neovim, VS Code, etc.)
-- **Smart Context**: Tree-sitter parsing for accurate code analysis
 - **Configurable**: Extensive options via `lintai.json` config file
 - **Rate Limited**: Built-in rate limiting to avoid API quota issues
 
 ## Installation
 
+This package is hosted on GitHub Packages. First, configure npm to use GitHub Packages for the `@maxischmaxi` scope:
+
 ```bash
-npm install -g lintai
+# Create or edit ~/.npmrc
+echo "@maxischmaxi:registry=https://npm.pkg.github.com" >> ~/.npmrc
+```
+
+Then install globally:
+
+```bash
+npm install -g @maxischmaxi/lintai
 ```
 
 Or use locally in a project:
 
 ```bash
-npm install --save-dev lintai
+npm install --save-dev @maxischmaxi/lintai
 ```
 
 ## Quick Start
@@ -31,7 +40,7 @@ npm install --save-dev lintai
 lintai --init
 ```
 
-This creates an `lintai.json` in your project.
+This creates a `lintai.json` in your project.
 
 ### 2. Set your API key
 
@@ -55,6 +64,9 @@ export GEMINI_API_KEY=your-api-key
 # Analyze a single file
 lintai src/index.ts
 
+# Analyze Go files
+lintai cmd/main.go
+
 # Analyze a directory
 lintai src/
 
@@ -62,9 +74,20 @@ lintai src/
 lintai src/ --json
 ```
 
+## Supported Languages
+
+| Language   | Extensions    | Language-Specific Checks                    |
+| ---------- | ------------- | ------------------------------------------- |
+| TypeScript | `.ts`, `.tsx` | `any` abuse, type assertions, async/await   |
+| JavaScript | `.js`, `.jsx` | Same as TypeScript                          |
+| Go         | `.go`         | Error handling, context.Context, goroutines |
+| Python     | `.py`         | Type hints, exception handling              |
+| Rust       | `.rs`         | Error handling, memory safety               |
+| Java       | `.java`       | Null safety, resource management            |
+
 ## Configuration
 
-Create an `lintai.json` in your project root:
+Create a `lintai.json` in your project root:
 
 ### OpenAI Configuration
 
@@ -127,12 +150,12 @@ Download from [lmstudio.ai](https://lmstudio.ai/) (Windows, macOS, Linux)
 
 In LM Studio, go to the "Discover" tab and download one of these recommended models:
 
-| Model                       | Size   | RAM Required | Quality                    |
-| --------------------------- | ------ | ------------ | -------------------------- |
-| `Qwen2.5-Coder-7B-Instruct` | 4.5 GB | 8 GB         | ⭐⭐⭐⭐⭐ Best for code   |
-| `DeepSeek-Coder-V2-Lite`    | 9 GB   | 12 GB        | ⭐⭐⭐⭐⭐ Excellent       |
-| `CodeLlama-7B-Instruct`     | 4 GB   | 8 GB         | ⭐⭐⭐⭐ Good              |
-| `Llama-3.2-3B-Instruct`     | 2 GB   | 6 GB         | ⭐⭐⭐ Fast, lower quality |
+| Model                       | Size   | RAM Required | Quality             |
+| --------------------------- | ------ | ------------ | ------------------- |
+| `Qwen2.5-Coder-7B-Instruct` | 4.5 GB | 8 GB         | Best for code       |
+| `DeepSeek-Coder-V2-Lite`    | 9 GB   | 12 GB        | Excellent           |
+| `CodeLlama-7B-Instruct`     | 4 GB   | 8 GB         | Good                |
+| `Llama-3.2-3B-Instruct`     | 2 GB   | 6 GB         | Fast, lower quality |
 
 **Step 3: Start the Server**
 
@@ -151,6 +174,9 @@ In LM Studio, go to the "Discover" tab and download one of these recommended mod
     "model": "qwen2.5-coder-7b-instruct",
     "timeout": 60000,
     "maxTokens": 4096
+  },
+  "performance": {
+    "rateLimitEnabled": false
   }
 }
 ```
@@ -181,15 +207,7 @@ ollama pull codellama:7b
 ollama pull qwen2.5-coder:3b
 ```
 
-**Step 3: Start Ollama**
-
-```bash
-# Ollama runs automatically after install
-# Or start manually:
-ollama serve
-```
-
-**Step 4: Configure lintai**
+**Step 3: Configure lintai**
 
 ```json
 {
@@ -203,42 +221,6 @@ ollama serve
 }
 ```
 
-### Recommended Local Models
-
-For code analysis, we recommend these models (in order of quality):
-
-| Model                 | Provider  | Command / Download             | Min RAM |
-| --------------------- | --------- | ------------------------------ | ------- |
-| **Qwen2.5-Coder-7B**  | Ollama    | `ollama pull qwen2.5-coder:7b` | 8 GB    |
-| **Qwen2.5-Coder-7B**  | LM Studio | Search "Qwen2.5-Coder"         | 8 GB    |
-| **DeepSeek-Coder-V2** | LM Studio | Search "DeepSeek-Coder"        | 12 GB   |
-| **CodeLlama-7B**      | Ollama    | `ollama pull codellama:7b`     | 8 GB    |
-| **Qwen2.5-Coder-3B**  | Ollama    | `ollama pull qwen2.5-coder:3b` | 6 GB    |
-
-**Tips:**
-
-- 7B models offer the best balance of quality and speed
-- 3B models are faster but may miss subtle issues
-- 13B+ models are slower but more accurate
-- GPU acceleration significantly improves speed
-
-### OpenAI-Compatible Endpoints
-
-lintai works with any OpenAI-compatible API server:
-
-```json
-{
-  "llm": {
-    "provider": "openai-compatible",
-    "baseUrl": "http://localhost:8080/v1",
-    "model": "your-model-name",
-    "apiKey": "optional-api-key"
-  }
-}
-```
-
-**Compatible servers:** LM Studio, Ollama, vLLM, LocalAI, llama.cpp server, text-generation-webui
-
 ### Full Configuration Reference
 
 ```json
@@ -249,11 +231,6 @@ lintai works with any OpenAI-compatible API server:
     "baseUrl": "https://api.openai.com/v1",
     "timeout": 30000,
     "maxTokens": 2048
-  },
-  "analysis": {
-    "mode": "snippet",
-    "includeImports": false,
-    "maxFileSize": 100000
   },
   "rules": {
     "codeSmells": true,
@@ -271,6 +248,9 @@ lintai works with any OpenAI-compatible API server:
     "debounceMs": 600,
     "rateLimitPerMinute": 10,
     "rateLimitEnabled": true
+  },
+  "cli": {
+    "extensions": ["ts", "tsx", "js", "jsx", "go"]
   },
   "debug": false
 }
@@ -290,11 +270,11 @@ Options:
   --json                     Output results as JSON
   --debug                    Enable debug logging
   -c, --config <path>        Path to config file
-  --ext <extensions>         File extensions to analyze (default: "ts,tsx")
+  --ext <extensions>         File extensions to analyze (default: "ts,tsx,js,jsx,go")
   --max-files <number>       Maximum files to analyze (default: 100)
   --model <model>            LLM model to use
   --base-url <url>           LLM API base URL
-  --provider <provider>      LLM provider (openai, anthropic, gemini, ollama)
+  --provider <provider>      LLM provider (openai, anthropic, gemini, ollama, openai-compatible)
   -V, --version              Output version number
   -h, --help                 Display help
 ```
@@ -311,6 +291,9 @@ lintai src/ --model gpt-4
 # Use Ollama locally
 lintai src/ --provider ollama --model codellama
 
+# Analyze Go code
+lintai ./cmd --ext go
+
 # Create config file
 lintai --init
 ```
@@ -324,11 +307,7 @@ lintai --init
 
 ### Installation
 
-1. Install lintai globally:
-
-   ```bash
-   npm install -g lintai
-   ```
+1. Install lintai globally (see Installation section above)
 
 2. Add to your Neovim config:
 
@@ -343,11 +322,12 @@ if not configs.lintai then
   configs.lintai = {
     default_config = {
       cmd = { 'lintai', '--lsp' },
-      filetypes = { 'typescript', 'typescriptreact' },
+      filetypes = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact', 'go' },
       root_dir = lspconfig.util.root_pattern(
         'lintai.json',
         'package.json',
         'tsconfig.json',
+        'go.mod',
         '.git'
       ),
       settings = {},
@@ -366,17 +346,6 @@ lspconfig.lintai.setup({
 })
 ```
 
-### Alternative: Project-local with npx
-
-```lua
-configs.lintai = {
-  default_config = {
-    cmd = { 'npx', 'lintai', '--lsp' },
-    -- ... rest of config
-  },
-}
-```
-
 ## What It Detects
 
 | Category           | Examples                                                          |
@@ -385,8 +354,16 @@ configs.lintai = {
 | **Bad Practices**  | Missing error handling, magic numbers, mutable global state       |
 | **Spaghetti Code** | Unclear control flow, callback hell, excessive conditionals       |
 | **Naming Issues**  | Unclear names, single-letter variables, inconsistent conventions  |
-| **Type Safety**    | `any` type abuse, missing null checks, unsafe type assertions     |
-| **Error Handling** | Empty catch blocks, swallowed errors, unchecked promises          |
+| **Type Safety**    | `any` type abuse (TS), missing null checks, unsafe assertions     |
+| **Error Handling** | Empty catch blocks, swallowed errors, ignored error returns (Go)  |
+
+### Go-Specific Checks
+
+- Ignored error returns (`_, err := ...` without checking)
+- Missing `err != nil` checks
+- Functions missing `context.Context` parameter
+- Mutex without `defer Unlock()`
+- Potential goroutine leaks
 
 ## Exit Codes
 
@@ -429,14 +406,6 @@ export GEMINI_API_KEY=...
 
 Or add `apiKey` to your `lintai.json`.
 
-### "Failed to initialize parser"
-
-The first run downloads Tree-sitter WASM files. Ensure you have internet access:
-
-```bash
-ls ~/.cache/lintai/wasm/
-```
-
 ### LSP not working in Neovim
 
 1. Check if lintai is installed: `which lintai`
@@ -446,7 +415,7 @@ ls ~/.cache/lintai/wasm/
 
 ### Rate limiting
 
-If you see rate limit errors, you can reduce the request rate or disable rate limiting entirely:
+If you see rate limit errors, reduce the request rate or disable rate limiting:
 
 ```json
 {
@@ -461,7 +430,7 @@ If you see rate limit errors, you can reduce the request rate or disable rate li
 
 ```bash
 # Clone and install
-git clone https://github.com/your/lintai
+git clone https://github.com/maxischmaxi/lintai
 cd lintai
 npm install
 
@@ -471,8 +440,8 @@ npm run build
 # Run tests
 npm test
 
-# Development mode
-npm run dev
+# Link locally for testing
+npm link
 ```
 
 ## License

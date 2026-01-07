@@ -1,10 +1,21 @@
 {
-  "name": "lintai",
+  "name": "@maxischmaxi/lintai",
   "version": "0.1.0",
   "description": "AI-powered multi-language linter using LLM analysis",
-  "author": "",
+  "author": "maxischmaxi",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maxischmaxi/lintai.git"
+  },
+  "homepage": "https://github.com/maxischmaxi/lintai#readme",
+  "bugs": {
+    "url": "https://github.com/maxischmaxi/lintai/issues"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "bin": {
     "lintai": "./dist/index.js"
   },
@@ -41,10 +52,18 @@
   "keywords": [
     "linter",
     "typescript",
+    "javascript",
+    "go",
+    "golang",
     "ai",
     "llm",
     "code-quality",
     "lsp",
-    "language-server"
+    "language-server",
+    "openai",
+    "anthropic",
+    "claude",
+    "gemini",
+    "ollama"
   ]
 }
