@@ -207,7 +207,16 @@ ollama pull codellama:7b
 ollama pull qwen2.5-coder:3b
 ```
 
-**Step 3: Configure lintai**
+**Step 3: Start the Ollama Server**
+
+```bash
+# Start the Ollama server (runs on http://localhost:11434)
+ollama serve
+```
+
+> **Note:** The server runs in the foreground. Open a new terminal for lintai commands, or run `ollama serve &` to start it in the background.
+
+**Step 4: Configure lintai**
 
 ```json
 {
