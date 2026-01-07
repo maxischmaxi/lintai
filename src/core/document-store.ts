@@ -1,4 +1,3 @@
-import type { Tree } from "web-tree-sitter";
 import type { Finding } from "../types/finding.js";
 import { computeHash, computeCacheKey } from "../utils/hash.js";
 import { logger } from "../utils/logger.js";
@@ -7,7 +6,6 @@ export interface DocumentEntry {
   uri: string;
   content: string;
   contentHash: string;
-  tree: Tree | null;
   findings: Finding[];
   lastAnalyzed: number | null;
   analyzing: boolean;
@@ -47,7 +45,6 @@ export class DocumentStore {
       uri,
       content,
       contentHash,
-      tree: null,
       findings: existing?.findings ?? [],
       lastAnalyzed: existing?.lastAnalyzed ?? null,
       analyzing: false,
@@ -56,13 +53,6 @@ export class DocumentStore {
     this.documents.set(uri, entry);
     logger.debug(`Document updated: ${uri}`);
     return entry;
-  }
-
-  setTree(uri: string, tree: Tree): void {
-    const entry = this.documents.get(uri);
-    if (entry) {
-      entry.tree = tree;
-    }
   }
 
   setFindings(uri: string, findings: Finding[]): void {
