@@ -17,12 +17,24 @@ export function parseResponse(response: string): ParseResult {
     rawResponse: response,
   };
 
+  // Check for empty/invalid responses
+  if (
+    !response ||
+    response.trim() === "" ||
+    response.trim() === "[]" ||
+    response.trim() === '[""]'
+  ) {
+    logger.debug("Empty or trivial response, treating as no findings");
+    return result;
+  }
+
   // Try to extract JSON from response
   const extracted = extractJSON(response);
 
   if (extracted === null) {
     result.parseError = "Failed to extract JSON from LLM response";
     logger.warn(result.parseError);
+    logger.warn("Full response was:", response.substring(0, 500));
     return result;
   }
 

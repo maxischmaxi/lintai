@@ -5,16 +5,20 @@ import { logger } from "./logger.js";
  * Returns null if all extraction attempts fail.
  */
 export function extractJSON(text: string): unknown | null {
+  logger.debug("Attempting to extract JSON, response length:", text.length);
+  logger.debug("Response preview:", text.substring(0, 200));
+
   // Strategy 1: Direct parse (text is pure JSON)
   try {
     return JSON.parse(text);
-  } catch {
-    logger.debug("Direct JSON parse failed, trying extraction strategies");
+  } catch (e) {
+    logger.debug("Direct JSON parse failed:", (e as Error).message);
   }
 
   // Strategy 2: Extract from markdown code block ```json ... ```
   const jsonBlockMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
   if (jsonBlockMatch) {
+    logger.debug("Found markdown JSON block, attempting to parse");
     try {
       return JSON.parse(jsonBlockMatch[1].trim());
     } catch {
@@ -25,6 +29,7 @@ export function extractJSON(text: string): unknown | null {
   // Strategy 3: Find array brackets [ ... ]
   const arrayMatch = text.match(/\[[\s\S]*\]/);
   if (arrayMatch) {
+    logger.debug("Found array brackets, attempting parse");
     try {
       return JSON.parse(arrayMatch[0]);
     } catch {
@@ -35,6 +40,7 @@ export function extractJSON(text: string): unknown | null {
   // Strategy 4: Find object brackets { ... }
   const objectMatch = text.match(/\{[\s\S]*\}/);
   if (objectMatch) {
+    logger.debug("Found object brackets, attempting parse");
     try {
       return JSON.parse(objectMatch[0]);
     } catch {

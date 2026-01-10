@@ -218,6 +218,8 @@ ollama serve
 
 **Step 4: Configure lintai**
 
+**Option A: Using the native `ollama` provider**
+
 ```json
 {
   "llm": {
@@ -229,6 +231,27 @@ ollama serve
   }
 }
 ```
+
+**Option B: Using `openai-compatible` provider (recommended for SDK compatibility)**
+
+Ollama provides an OpenAI-compatible API endpoint at `/v1/chat/completions`. Use this if you need compatibility with `@ai-sdk/openai-compatible` or other OpenAI-compatible clients:
+
+```json
+{
+  "llm": {
+    "provider": "openai-compatible",
+    "baseUrl": "http://localhost:11434/v1",
+    "model": "qwen2.5-coder:7b",
+    "timeout": 60000,
+    "maxTokens": 4096
+  },
+  "performance": {
+    "rateLimitEnabled": false
+  }
+}
+```
+
+> **Note:** Both options work. The `openai-compatible` provider uses the standard `/v1/chat/completions` endpoint, making it fully compatible with OpenAI SDKs including `@ai-sdk/openai-compatible`.
 
 ### Full Configuration Reference
 

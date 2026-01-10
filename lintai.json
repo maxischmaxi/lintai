@@ -3,20 +3,20 @@
   "llm": {
     "provider": "ollama",
     "baseUrl": "http://localhost:11434",
-    "model": "qwen2.5-coder:7b",
-    "timeout": 60000,
-    "maxTokens": 4096
+    "model": "glm-4.7:cloud",
+    "timeout": 120000,
+    "maxTokens": 2048
   },
   "analysis": {
     "mode": "snippet",
     "includeImports": false,
-    "maxFileSize": 100000
+    "maxFileSize": 50000
   },
   "rules": {
     "codeSmells": true,
     "badPractices": true,
-    "spaghetti": true,
-    "naming": true,
+    "spaghetti": false,
+    "naming": false,
     "errorHandling": true,
     "anyAbuse": true
   },
@@ -29,5 +29,5 @@
     "rateLimitPerMinute": 100,
     "rateLimitEnabled": false
   },
-  "debug": false
+  "debug": true
 }
