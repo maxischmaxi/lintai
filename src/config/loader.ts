@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
+import { homedir } from "node:os";
 import {
   AilintConfigSchema,
   type AilintConfig,
@@ -59,6 +60,18 @@ function loadConfigFile(configPath: string): Partial<AilintConfig> {
     logger.warn(`Failed to load config file: ${configPath}`, error);
     return {};
   }
+}
+
+function getUserConfigPath(): string | null {
+  const userConfigDir = join(homedir(), ".config", "lintai");
+  const userConfigPath = join(userConfigDir, "lintai.json");
+
+  if (existsSync(userConfigPath)) {
+    logger.debug(`Found user config at ${userConfigPath}`);
+    return userConfigPath;
+  }
+
+  return null;
 }
 
 function getAPIKeyFromEnv(provider: LLMProvider): string | undefined {
@@ -174,11 +187,20 @@ export function loadConfig(
   // Start with defaults
   let config: AilintConfig = { ...DEFAULT_CONFIG };
 
-  // Load from config file (if specified or found)
+  // Step 1: Load user config from ~/.config/lintai/lintai.json
+  const userConfigPath = getUserConfigPath();
+  if (userConfigPath) {
+    const userConfig = loadConfigFile(userConfigPath);
+    config = deepMerge(config, userConfig);
+    logger.debug("Applied user config");
+  }
+
+  // Step 2: Load project config (if specified or found)
   const configPath = options.config || findConfigFile(cwd);
   if (configPath) {
     const fileConfig = loadConfigFile(configPath);
     config = deepMerge(config, fileConfig);
+    logger.debug(`Applied project config from ${configPath}`);
   }
 
   // Determine provider (from file config, CLI, or default)
